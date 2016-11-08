@@ -1,18 +1,15 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<head>
+<link rel="shortcut icon" href="">
+<title>Alabama Population Density</title>
+</head>
 <style>
-
-h1{
-    font: 14px sans-serif;
+h0{
+    font: 28px sans-serif;
+    font-weight: bold;
 }
-    
-h2{
-    font: 14px sans-serif;
-}
-h3{
-    font: 14px sans-serif;
-}
-h4{
+ul{
     font: 14px sans-serif;
 }
 svg {
@@ -45,17 +42,23 @@ svg {
 
 </style>
 <body>
+
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script src="//d3js.org/topojson.v1.min.js"></script>
 <script>
 
-var width = 960,
-    height = 1100;
+var width = 600,
+    height = 550;
 
 var formatNumber = d3.format(",d");
 
-var path = d3.geo.path()
-    .projection(null);
+var projection = d3.geo.albersUsa()
+    .translate([-550, -225])
+    //.center(32.7, 86.3)
+    .scale([5000]);
+
+    var path = d3.geo.path()
+    .projection(projection);
 
 var color = d3.scale.threshold()
     .domain([1, 10, 50, 100, 500, 1000, 2000, 5000])
@@ -79,7 +82,7 @@ var svg = d3.select("body").append("svg")
 
 var g = svg.append("g")
     .attr("class", "key")
-    .attr("transform", "translate(440,40)");
+    .attr("transform", "translate(0,525)");
 
 g.selectAll("rect")
     .data(color.range().map(function(d, i) {
@@ -100,18 +103,24 @@ g.call(xAxis).append("text")
     .attr("y", -6)
     .text("Population per square mile");
 
+svg.append("text")
+    .attr("class", "title")
+    .attr("y", 25)
+    .style("font-size", "26px")
+    .text("Alabama Population Density");
+
 var tracts;
     
-d3.json("ca.json", function(error, ca) {
+d3.json("al.json", function(error, al) {
   if (error) throw error;
 
-  tracts = topojson.feature(ca, ca.objects.tracts);
+  tracts = topojson.feature(al, al.objects.tracts);
 
   // Clip tracts to land.
   svg.append("defs").append("clipPath")
     .attr("id", "clip-land")
     .append("path")
-    .datum(topojson.feature(ca, ca.objects.counties))
+    .datum(topojson.feature(al, al.objects.counties))
     .attr("d", path);
 
   // Group tracts by color for faster rendering.
@@ -129,13 +138,13 @@ d3.json("ca.json", function(error, ca) {
 
   // Draw county borders.
   svg.append("path")
-      .datum(topojson.mesh(ca, ca.objects.counties, function(a, b) { return a !== b; }))
+      .datum(topojson.mesh(al, al.objects.counties, function(a, b) { return a !== b; }))
       .attr("class", "county-border")
       .attr("d", path);
     
     // Draw census borders.
   svg.append("path")
-      .datum(topojson.mesh(ca, ca.objects.tracts, function(a, b) { return a !== b; }))
+      .datum(topojson.mesh(al, al.objects.tracts, function(a, b) { return a !== b; }))
       .attr("class", "census-border")
       .attr("d", path)
       .style("stroke-opacity", 0);
@@ -149,7 +158,8 @@ var flag = false;
 //Change county color to a different key (and switch them back)
 function changeColors(){
     if (flag == false){
-    color
+    
+        color
     .domain([1, 50, 100, 250, 500, 1000, 2500, 5000])
     .range(["#35D0E9", "#32B9E0", "#2FA2D7", "#2C8CCE", "#2975C5", "#265FBC", "#2348B3", "#2032AA", "#1D1BA1"]);
 
@@ -174,8 +184,8 @@ function changeColors(){
     svg.selectAll("#counties")
     .selectAll("path")
     .data(d3.nest()
-        .key(function(d) { return color(d.properties.population / d.properties.area * 2.58999e6); })
-        .entries(tracts.features.filter(function(d) { return d.properties.area; })))
+        .key(function(d) { return color(d.objects.population / d.objects.area * 2.58999e6); })
+        .entries(tracts.features.filter(function(d) { return d.objects.area; })))
       .style("fill", function(d) { return d.key; });
     flag = true;
     }
@@ -205,10 +215,10 @@ function changeColors(){
     svg.selectAll("#counties")
     .selectAll("path")
     .data(d3.nest()
-        .key(function(d) { return color(d.properties.population / d.properties.area * 2.58999e6); })
-        .entries(tracts.features.filter(function(d) { return d.properties.area; })))
+        .key(function(d) { return color(d.objects.population / d.objects.area * 2.58999e6); })
+        .entries(tracts.features.filter(function(d) { return d.objects.area; })))
       .style("fill", function(d) { return d.key; });
-        flag = false;
+    flag = false;
     }
     
 }
@@ -241,11 +251,13 @@ function changeCensus(){
            value="Toggle Census Boundaries" 
            onclick="changeCensus()" />
 </div>
-<h1>Greg Chow</h1>
-<h2>Instructor: Suresh Lodha</h2>
-<h3>CMPS 165: Data programming for Visualization</h3>
-<h4>Fall 2016</h4>
-<a href="https://github.com/ewmoldycheese/california_population/tree/master">
+<ul>
+  <li>Greg Chow</li>
+  <li>Instructor: Suresh Lodha</li>
+  <li>CMPS 165: Data programming for Visualization</li>
+  <li>Fall 2016</li>
+</ul>
+<a href="https://github.com/ewmoldycheese/alabama_population/tree/master">
     Github Link</a>
 <a href="http://ewmoldycheese.github.io/">
     Map Link</a>
